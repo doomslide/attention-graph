@@ -1,0 +1,667 @@
+/* This is a complete replacement of the CSS file */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    color: #eee;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#main-app {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+h2, h3 {
+    margin: 0;
+    color: #fff;
+}
+
+h2 {
+    font-size: 1.4rem;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
+/* Full-screen visualization container */
+#visualization-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #0a0a0a;
+}
+
+/* The visualization itself takes the full screen */
+#visualization {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: #111;
+}
+
+/* Overlay controls */
+.overlay-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none; /* Let clicks pass through to visualization */
+    z-index: 1000;
+}
+
+/* Control panel for text input and analysis button */
+.control-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 350px;
+    background: rgba(20, 20, 20, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    pointer-events: auto; /* Re-enable clicks */
+    max-height: 90vh;
+    z-index: 1100; /* Above other elements */
+}
+
+/* Panel header area that can be dragged */
+.panel-header {
+    cursor: move;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Input group containing the textarea and buttons */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+textarea {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    resize: none;
+    font-family: inherit;
+    font-size: 14px;
+    background-color: rgba(50, 50, 50, 0.8);
+    color: #fff;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+}
+
+.input-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.generation-controls {
+    display: flex;
+    align-items: center;
+}
+
+.generation-controls label {
+    margin-right: 10px;
+    font-weight: 500;
+    color: #ccc;
+}
+
+.number-input {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: rgba(40, 40, 40, 0.8);
+}
+
+.number-input button {
+    width: 28px;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    background-color: #444;
+}
+
+.number-input input {
+    width: 40px;
+    height: 100%;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+    background-color: transparent;
+    color: #fff;
+}
+
+.number-input input:focus {
+    outline: none;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#loading {
+    margin-top: 10px;
+    color: #3498db;
+    font-weight: bold;
+}
+
+#error-message {
+    margin-top: 10px;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Smooth scrolling for the visualization */
+.visualization-scroll-container {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #555 #111; /* For Firefox */
+    scroll-behavior: smooth; /* Enable smooth scrolling */
+    overflow: auto;
+}
+
+/* Visualization tools overlay */
+.visualization-tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(20, 20, 20, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    width: 250px;
+    pointer-events: auto;
+    z-index: 1100; /* Above other elements */
+}
+
+.tool-section {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tool-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.threshold-control {
+    margin-bottom: 15px;
+}
+
+.threshold-control label {
+    display: block;
+    color: #ddd;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.slider-with-value {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#threshold-slider {
+    flex: 1;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    appearance: none;
+    outline: none;
+}
+
+#threshold-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+
+#threshold-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+
+#threshold-value {
+    min-width: 35px;
+    text-align: center;
+    font-weight: bold;
+    color: #3498db;
+    padding: 3px 6px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 3px;
+}
+
+.compact-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.head-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(40, 40, 40, 0.8);
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    border: 1px solid transparent;
+}
+
+.head-toggle:hover {
+    background: rgba(60, 60, 60, 0.8);
+}
+
+.head-toggle input {
+    margin-right: 4px;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.help-text p {
+    margin: 0;
+}
+
+.help-text strong {
+    color: #ddd;
+}
+
+/* Custom scrollbar for Webkit browsers */
+.visualization-scroll-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.visualization-scroll-container::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.visualization-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 10px;
+    border: 2px solid #f5f5f5;
+}
+
+.visualization-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Styling for the attention strands */
+.attention-strand {
+    pointer-events: visible; /* Enable mouse events on paths */
+    cursor: pointer;
+    transition: stroke-width 0.2s ease, opacity 0.2s ease;
+}
+
+.attention-strand:hover {
+    stroke-width: 4px !important; /* Thicker on hover */
+    opacity: 1 !important;
+}
+
+/* Attention nodes at each layer */
+.attention-node, .grid-node {
+    cursor: pointer;
+    transition: r 0.2s ease, fill 0.2s ease;
+}
+
+.attention-node:hover, .grid-node:hover {
+    r: 6;
+    fill: #4a90e2;
+}
+
+/* Visualization placeholder */
+.visualization-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #777;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.visualization-placeholder p {
+    margin: 10px 0;
+}
+
+.visualization-placeholder .small {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Cursor in visualization */
+.layer-cursor {
+    pointer-events: none; /* Don't interfere with mouse events */
+}
+
+/* Attention layer highlighting */
+.layer-label-bg {
+    transition: fill 0.2s, stroke 0.2s;
+}
+
+.layer-label {
+    transition: fill 0.2s, font-weight 0.2s;
+}
+
+.layer-grid-line {
+    transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+/* Grid visualization specific styles */
+.grid-visualization-svg {
+    width: 100%;
+    min-width: 800px;
+}
+
+.grid-line {
+    stroke: #eee;
+    stroke-width: 1px;
+}
+
+.token-label {
+    font-size: 12px;
+    fill: #333;
+    text-anchor: middle;
+}
+
+/* Head toggles */
+#head-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.head-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #f8f9fa;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid #ddd;
+}
+
+.head-toggle input {
+    margin-right: 5px;
+}
+
+.head-control-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.head-control-buttons button {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+#threshold-control {
+    margin-top: 20px;
+}
+
+#threshold-slider {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.visualization-controls {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.control-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.control-label input {
+    margin-right: 8px;
+}
+
+.control-help {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    margin-left: 8px;
+    font-size: 12px;
+    cursor: help;
+}
+
+.info-text {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.info-text p {
+    margin: 5px 0;
+}
+
+.info-text strong {
+    color: #333;
+}
+
+#current-layer-indicator {
+    color: #3498db;
+    z-index: 10;
+}
+
+.attention-tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    z-index: 1000;
+    max-width: 300px;
+}
+
+/* Generation-related styles */
+/* Generation marker styles */
+.generation-marker-line {
+    pointer-events: none;
+}
+
+.generation-marker-label {
+    pointer-events: none;
+}
+
+.generation-step-indicator {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.step-label {
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.generated-text {
+    margin-top: 5px;
+    font-family: monospace;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-left: 3px solid #3498db;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* Token styling by generation step */
+.token-step-0 circle {
+    fill: white;
+}
+
+.token-generated circle {
+    fill: #f8f8ff;
+    stroke: #3498db;
+}
+
+.layer-marker {
+    position: absolute;
+    width: 1px;
+    height: 12px;
+    background-color: #555;
+    bottom: 6px;
+}
+
+.layer-label {
+    position: absolute;
+    font-size: 10px;
+    color: #555;
+    transform: translateX(-50%);
+    bottom: 20px;
+}
+
+.major-marker {
+    height: 18px;
+    width: 2px;
+    background-color: #333;
+}
+
+.generation-step-marker {
+    height: 20px;
+    width: 2px;
+    background-color: #e74c3c; /* Red to match generation markers */
+}
+
+.generation-step-marker::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+}
+
+.major-label {
+    font-weight: bold;
+}
+
+/* Generation step styling */
+.layer-thumbnail.generation-step {
+    position: relative;
+    border-color: #e74c3c;
+    border-width: 2px;
+}
+
+.generation-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 10px;
+    height: 10px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    z-index: 5;
+}
+
+/* Specialized content for scroll area */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f8f8f8;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Graph Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="main-app">
+        <!-- Full screen visualization container -->
+        <div id="visualization-container">
+            <!-- Background grid visualization -->
+            <div id="visualization">
+                <div class="visualization-placeholder">
+                    <p>Enter text and click "Analyze" to view attention patterns</p>
+                </div>
+            </div>
+            
+            <!-- Floating control panels -->
+            <div class="control-panel" id="input-panel">
+                <div class="panel-header">
+                    <h2>Attention Graph</h2>
+                </div>
+                
+                <div class="input-group">
+                    <textarea id="input-text" placeholder="Enter text to analyze (max 100 tokens)...">Once upon a time the world was a land of darkness, and the darkness was the light of the sun.</textarea>
+                    <div class="input-actions">
+                        <button id="analyze-btn">Analyze</button>
+                    </div>
+                </div>
+                
+                <div id="loading" class="hidden">Analyzing... This may take a moment.</div>
+                <div id="error-message" class="hidden"></div>
+            </div>
+            
+            <!-- Compact head toggles and threshold control -->
+            <div class="visualization-tools hidden" id="tools-panel">
+                <div class="panel-header">
+                    <h3>Visualization Controls</h3>
+                </div>
+                
+                <div class="tool-section">
+                    <div class="threshold-control">
+                        <label for="threshold-slider">Attention Threshold:</label>
+                        <div class="slider-with-value">
+                            <input type="range" id="threshold-slider" min="0" max="1" step="0.01" value="0.98">
+                            <span id="threshold-value">0.98</span>
+                        </div>
+                    </div>
+                    
+                    <div id="head-toggles" class="compact-toggles"></div>
+                </div>
+                
+                <div class="tool-section help-text">
+                    <p><strong>Click node</strong>: Focus on specific node's connections | <strong>Hover strand</strong>: View details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='visualizer.js') }}"></script>
+    <script>
+        // Removed generation count controls
+        
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if D3.js is loaded 
+            if (typeof d3 === 'undefined') {
+                console.error("Error: D3.js library not loaded");
+                showError("Error loading D3.js visualization library. Please check your internet connection and try refreshing the page.");
+                return;
+            }
+            
+            // Make sure visualizer script has loaded properly
+            if (typeof initializeGridVisualization !== 'function') {
+                console.error("Error: Grid visualization function not loaded");
+                showError("Visualization components failed to load. Please refresh the page and try again.");
+                return;
+            }
+            
+            // Analyze button event listener
+            document.getElementById('analyze-btn').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                if (!inputText) {
+                    showError("Please enter some text to analyze");
+                    return;
+                }
+                
+                analyzeText(inputText);
+            });
+        });
+        
+        function analyzeText(text) {
+            const loadingElem = document.getElementById('loading');
+            const errorElem = document.getElementById('error-message');
+            const vizTools = document.getElementById('tools-panel');
+            
+            // Show loading, hide error
+            loadingElem.classList.remove('hidden');
+            errorElem.classList.add('hidden');
+            
+            // Hide visualization tools until data is loaded
+            vizTools.classList.add('hidden');
+            
+            // Set loading message
+            loadingElem.textContent = "Analyzing... This may take a moment.";
+            
+            fetch('/api/attention', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    text: text,
+                    generate: 0 // No generation
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingElem.classList.add('hidden');
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    
+                    try {
+                        // Clear visualization container first
+                        const container = document.getElementById("visualization");
+                        container.innerHTML = '';
+                        
+                        // Render the grid visualization
+                        console.log("Initializing grid visualization...");
+                        initializeGridVisualization(data);
+                    } catch (error) {
+                        console.error("Error initializing grid visualization:", error);
+                        showError("Error while initializing the visualization: " + error.message);
+                    }
+                }
+            })
+            .catch(error => {
+                loadingElem.classList.add('hidden');
+                showError("An error occurred: " + error.message);
+            });
+        }
+        
+        // Removed generation text display function
+        
+        function showError(message) {
+            const errorElem = document.getElementById('error-message');
+            errorElem.textContent = message;
+            errorElem.classList.remove('hidden');
+        }
+        
+        // Make panels draggable
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make panels draggable by their headers
+            const inputPanel = document.getElementById('input-panel');
+            const toolsPanel = document.getElementById('tools-panel');
+            
+            if (inputPanel) {
+                const inputHeader = inputPanel.querySelector('.panel-header');
+                makeDraggable(inputPanel, inputHeader || inputPanel);
+            }
+            
+            if (toolsPanel) {
+                const toolsHeader = toolsPanel.querySelector('.panel-header');
+                makeDraggable(toolsPanel, toolsHeader || toolsPanel);
+            }
+            
+            // Setup threshold slider instant feedback
+            const thresholdSlider = document.getElementById('threshold-slider');
+            const thresholdValue = document.getElementById('threshold-value');
+            
+            if (thresholdSlider && thresholdValue) {
+                thresholdSlider.addEventListener('input', function() {
+                    thresholdValue.textContent = parseFloat(this.value).toFixed(2);
+                });
+            }
+        });
+        
+        // Function to make an element draggable by a handle
+        function makeDraggable(element, handle) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            handle.style.cursor = 'move';
+            handle.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e.preventDefault();
+                // Get the mouse cursor position at startup
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e.preventDefault();
+                // Calculate the new cursor position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+            }
+            
+            function closeDragElement() {
+                // Stop moving when mouse button is released
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+    </script>
+</body>
+</html>
