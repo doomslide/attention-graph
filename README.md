@@ -1,1 +1,1 @@
-![typical_sonn](typical_sonn.png)
+![viz](viz.png)
